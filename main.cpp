@@ -5,6 +5,24 @@
 #include <sstream>
 using namespace std;
 
+double** duplicateMatrix(double** original, int rows, int cols) {
+	// Allocate memory for the new array
+	double** duplicate = new double* [rows];
+	for (int i = 0; i < rows; ++i) {
+		duplicate[i] = new double[cols];
+	}
+
+	// Copy the contents of the original array to the duplicate
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			duplicate[i][j] = original[i][j];
+		}
+	}
+
+	return duplicate;
+}
+
+
 int findMatrixDimension(double** matrix)
 {
 	int n=0;
@@ -81,7 +99,7 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 	for (int i = 0; i < n; i++)
 	{
 		sign = 1;
-		stringstream ss(equations[i]);
+		stringstream ss(equations[i],'+');
 		char var;
 		string term;
 		bool eq = false;
@@ -93,7 +111,12 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 			else if (term == "-") sign = -1;
 			else if (term == "=") eq = true;
 			else if (eq) equal[i] = stoi(term);
-
+			else if (term[0] == '=')
+			{
+				term = term.substr(1);
+				eq = true;
+				equal[i] = stoi(term);
+			}
 			else 
 			{
 				if (term[0] == '-')
@@ -106,14 +129,19 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 					sign = 1;
 					term = term.substr(1);
 				}
-				
-				if(term.length()!=0)
+				if (term.back() == '=')
+				{
+					eq = true;
+					term.pop_back();
+				}
+
+				  if(term.length()!=0)
 				{
 					var = term.back();
 					term.pop_back();
 					if (term.empty()) term = "1";
 				}
-
+		
 
 				if (variables.find(var) == variables.end() && isalpha(var))
 				{
@@ -131,47 +159,53 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 	}
 }
 
-
-
-//int main()
-//{
-//	int n = 4;
-//	double** matrix= new double *[n+1];
-//	for (int i = 0; i < n; i++)
-//		matrix[i] = new double[n];
-//	int count = 1;
-//	for (int i = 0; i < n; i++)
-//	{
-//		for (int j = 0; j < n; j++)
-//		{
-//			if (i == j) matrix[i][j] = 1;
-//			else matrix[i][j] = 0;
-//		}
-//	}
-//	matrix[n] = NULL; // Terminate the matrix array with NULL
-//
-//	cout << findMatrixDimension(matrix)<<endl;
-//	double** subMatrix = findSubmatrix(matrix, 1, 1);
-//	cout << "Submatrix:" << endl;
-//	for (int i = 0; i < n - 1; i++) {
-//		for (int j = 0; j < n - 1; j++) {
-//			cout << subMatrix[i][j] << " ";
-//		}
-//		cout << endl;
-//	}
-//	cout<<"Determinent: "<<calculateDeterminant(matrix)<<endl;
-//
-//	return 0;
-//}
+void cramers(double** matrix, double* equal, int n, map<char, int> variables, vector<string> equations)
+{	
+	equationsToMatrix(matrix, equal, n, variables, equations);
+	double det = calculateDeterminant(matrix);
+	char var;
+	if (det == 0) 
+	{
+		cout << "Matrix is Not Invertible!";
+		return;
+	}
+	else
+	{
+		for (int i = 0; i < n; i++)
+		{
+			double** temp = duplicateMatrix(matrix, n, n);
+			for (int j = 0; j < n; j++)
+			{
+				temp[j][i] = equal[j];
+			}
+			temp[n] = NULL;
+			double detTemp = calculateDeterminant(temp);
+			for (auto& pair : variables)
+			{
+				if (pair.second == i)
+					var = pair.first;
+			}
+			cout << var << " = " << detTemp / det <<endl;
+		}
+	}
+}
 
 
 int main() {
+	cout << "=========================Cramer's Rule Calculator=========================" << endl <<endl;
+	cout << "Enter Equations in the following form: i.e. 2x + 3y + 4z = 5 "<<endl;
+		cout<<"(Make Sure to Include Spaces After each Variable)" << endl<<endl;
 	// Number of equations
-	int n = 3;
-
+	cout << "Enter Size of nxn Matrix: ";
+	int n;
+	do
+	{
+		cin >> n;
+		if (n < 2) cout << "Enter Valid Size." << endl;
+	} while (n < 2);
+	
 	// Coefficient matrix
 	double** matrix = new double* [n];
-
 	// Solution matrix
 	double* equal = new double[n];
 
@@ -186,17 +220,27 @@ int main() {
 		}
 		equal[i] = 0;
 	}
-
+	matrix[n] = NULL;
 	// Test equations
-	vector<string> equations = {
-		"2x + 3y - 2z = 2",
-		"3x - y + 4z = -5",
-		"x + 2y - z = 3"
-	};
+	vector<string> equations;
+	string temp;
+	// Clear input buffer
+	cin.clear();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
+	for (int i = 0; i < n; i++)
+	{
+		cout << "Enter Equation " << i + 1 << ": ";
+		getline(cin, temp);		
+		equations.push_back(temp);
+	}
+
+	cout << endl;
+	cout << "Unique Solution Set: " << endl;
 	// Convert equations to matrix form
-	equationsToMatrix(matrix, equal, n, variables, equations);
-
+	cramers(matrix, equal, n, variables, equations);
+	
+	cout << endl << endl;
 	// Output coefficient matrix and solution matrix
 	cout << "Coefficient matrix:" << endl;
 	for (int i = 0; i < n; i++) {
@@ -206,17 +250,10 @@ int main() {
 		cout << endl;
 	}
 
-	cout << "Solution matrix:" << endl;
+	cout << "Solution vector:" << endl;
 	for (int i = 0; i < n; i++) {
 		cout << equal[i] << endl;
 	}
-
-	// Free memory
-	for (int i = 0; i < n; i++) {
-		delete[] matrix[i];
-	}
-	delete[] matrix;
-	delete[] equal;
 
 	return 0;
 }
