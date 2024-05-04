@@ -145,6 +145,7 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 
 				if (variables.find(var) == variables.end() && isalpha(var))
 				{
+			
 					variables[var] = variables.size();
 				}
 				
@@ -159,15 +160,20 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 	}
 }
 
-void cramers(double** matrix, double* equal, int n, map<char, int> variables, vector<string> equations)
+bool cramers(double** matrix, double* equal, int n, map<char, int> variables, vector<string> equations)
 {	
 	equationsToMatrix(matrix, equal, n, variables, equations);
+	if (variables.size() > n)
+	{
+		cout << "Too Many Variables Entered for Size of Array." << endl;
+		return false;
+	}
 	double det = calculateDeterminant(matrix);
 	char var;
 	if (det == 0) 
 	{
-		cout << "Matrix is Not Invertible!";
-		return;
+		cout << "Matrix is Not Invertible: No Unique Solution Set."<<endl;
+		return false;
 	}
 	else
 	{
@@ -188,6 +194,7 @@ void cramers(double** matrix, double* equal, int n, map<char, int> variables, ve
 			cout << var << " = " << detTemp / det <<endl;
 		}
 	}
+	return true;
 }
 
 
@@ -236,23 +243,25 @@ int main() {
 	}
 
 	cout << endl;
-	cout << "Unique Solution Set: " << endl;
 	// Convert equations to matrix form
-	cramers(matrix, equal, n, variables, equations);
+	bool done = cramers(matrix, equal, n, variables, equations);
 	
-	cout << endl;
-	// Output coefficient matrix and solution matrix
-	cout << "Coefficient matrix:" << endl;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			cout << matrix[i][j] << " ";
+	if(done)
+	{
+		cout << endl;
+		// Output coefficient matrix and solution matrix
+		cout << "Coefficient matrix:" << endl;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				cout << matrix[i][j] << " ";
+			}
+			cout << endl;
 		}
 		cout << endl;
-	}
-	cout << endl;
-	cout << "Solution vector:" << endl;
-	for (int i = 0; i < n; i++) {
-		cout << equal[i] << endl;
+		cout << "Solution vector:" << endl;
+		for (int i = 0; i < n; i++) {
+			cout << equal[i] << endl;
+		}
 	}
 
 	return 0;
