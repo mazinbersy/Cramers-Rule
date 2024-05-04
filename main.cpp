@@ -240,7 +240,7 @@ int main() {
 	// Convert equations to matrix form
 	cramers(matrix, equal, n, variables, equations);
 	
-	cout << endl << endl;
+	cout << endl;
 	// Output coefficient matrix and solution matrix
 	cout << "Coefficient matrix:" << endl;
 	for (int i = 0; i < n; i++) {
@@ -249,7 +249,7 @@ int main() {
 		}
 		cout << endl;
 	}
-
+	cout << endl;
 	cout << "Solution vector:" << endl;
 	for (int i = 0; i < n; i++) {
 		cout << equal[i] << endl;
