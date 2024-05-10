@@ -214,7 +214,7 @@ bool cramers(double** matrix, double* equal, int n, map<string, int> variables, 
 int main() {
 	cout << "=========================Cramer's Rule Calculator=========================" << endl <<endl;
 	cout << "Enter Equations in the following form: i.e. 2x + 3y + 4z = 5 "<<endl;
-		cout<<"(Make Sure to Include Spaces After each Variable)" << endl<<endl;
+		cout<<"(Make Sure to Include Spaces After Each Variable)" << endl<<endl;
 	// Number of equations
 	cout << "Enter Size of nxn Matrix: ";
 	int n;
