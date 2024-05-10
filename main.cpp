@@ -92,7 +92,7 @@ double calculateDeterminant(double ** matrix)
 
 }
 
-void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& variables, vector<string> equations)
+void equationsToMatrix(double**& matrix, double* equal, int n, map<string, int>& variables, vector<string> equations)
 {
 	int sign;
 
@@ -100,22 +100,23 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 	{
 		sign = 1;
 		stringstream ss(equations[i],'+');
-		char var;
+		string var;
 		string term;
 		bool eq = false;
-
+		bool foundvar;
 		while (ss >> term)
 		{
 			int coeff = 0;
+			foundvar = false;
 			if (term == "+") sign = 1;
 			else if (term == "-") sign = -1;
 			else if (term == "=") eq = true;
-			else if (eq) equal[i] = stoi(term);
+			else if (eq) equal[i] = stod(term);
 			else if (term[0] == '=')
 			{
 				term = term.substr(1);
 				eq = true;
-				equal[i] = stoi(term);
+				equal[i] = stod(term);
 			}
 			else 
 			{
@@ -135,22 +136,29 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 					term.pop_back();
 				}
 
-				  if(term.length()!=0)
+				  if(!term.empty())
 				{
-					var = term.back();
-					term.pop_back();
-					if (term.empty()) term = "1";
+					  for (int i = 0; term.size(); i++)
+					  {
+						  if (isalpha(term[i]) && !isdigit(term[i]))
+						  {
+							  var = term.substr(i);
+							  term = term.substr(0, i);
+							  break;
+						  }
+					}
+					  if (term.empty()) term = "1";
 				}
 		
 
-				if (variables.find(var) == variables.end() && isalpha(var))
+				if (variables.find(var) == variables.end())
 				{
 			
 					variables[var] = variables.size();
 				}
 				
 				if (!term.empty()) {
-					coeff = stoi(term) * sign;
+					coeff = stod(term) * sign;
 				}
 				 matrix[i][variables[var]] = coeff;
 			}
@@ -160,7 +168,7 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<char, int>& v
 	}
 }
 
-bool cramers(double** matrix, double* equal, int n, map<char, int> variables, vector<string> equations)
+bool cramers(double** matrix, double* equal, int n, map<string, int> variables, vector<string> equations)
 {	
 	equationsToMatrix(matrix, equal, n, variables, equations);
 	if (variables.size() > n)
@@ -169,7 +177,7 @@ bool cramers(double** matrix, double* equal, int n, map<char, int> variables, ve
 		return false;
 	}
 	double det = calculateDeterminant(matrix);
-	char var;
+	string var;
 	if (det == 0) 
 	{
 		cout << "Matrix is Not Invertible: No Unique Solution Set."<<endl;
@@ -191,7 +199,12 @@ bool cramers(double** matrix, double* equal, int n, map<char, int> variables, ve
 				if (pair.second == i)
 					var = pair.first;
 			}
-			cout << var << " = " << detTemp / det <<endl;
+			double result = detTemp / det;
+			
+			
+			cout << var << " = " << result <<endl;
+
+
 		}
 	}
 	return true;
@@ -217,7 +230,7 @@ int main() {
 	double* equal = new double[n];
 
 	// Map to store variable indices
-	map<char, int> variables;
+	map<string, int> variables;
 
 	// Initialize coefficient matrix and solution matrix
 	for (int i = 0; i < n; i++) {
