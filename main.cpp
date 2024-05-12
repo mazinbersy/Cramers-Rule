@@ -99,7 +99,7 @@ void equationsToMatrix(double**& matrix, double* equal, int n, map<string, int>&
 	for (int i = 0; i < n; i++)
 	{
 		sign = 1;
-		stringstream ss(equations[i],'+');
+		stringstream ss(equations[i]);
 		string var;
 		string term;
 		bool eq = false;
